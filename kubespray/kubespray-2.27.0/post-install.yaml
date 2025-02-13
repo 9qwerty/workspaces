@@ -1,0 +1,21 @@
+- hosts: kube_control_plane
+  become: yes
+  vars:
+    current_user: "{{ lookup('env', 'USER') }}"
+  tasks:
+    - name: Create kube config directory for user
+      file:
+        path: "/home/{{ current_user }}/.kube"
+        state: directory
+        owner: "{{ current_user }}"
+        group: "{{ current_user }}"
+        mode: "0755"
+
+    - name: Copy admin.conf to kube config
+      copy:
+        src: "/etc/kubernetes/admin.conf"
+        dest: "/home/{{ current_user }}/.kube/config"
+        remote_src: yes
+        owner: "{{ current_user }}"
+        group: "{{ current_user }}"
+        mode: "0600"

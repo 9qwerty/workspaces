@@ -1,0 +1,20 @@
+- name: Update and upgrade packages
+  hosts: all
+  become: true
+  tasks:
+    - name: Update apt package index
+      apt:
+        update_cache: yes
+
+    - name: Install locales-all
+      apt:
+        name: locales-all
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+
+    - name: Autoremove unnecessary packages
+      apt:
+        autoremove: yes
+        purge: yes
