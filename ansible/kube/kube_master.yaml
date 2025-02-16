@@ -52,8 +52,10 @@
       become: yes
       # become_user: dev
       file:
-        path: $HOME/.kube
+        path: /home/{{ current_user }}/.kube
         state: directory
+        owner: "{{ current_user }}"
+        group: "{{ current_user }}"
         mode: 0755
 
     - name: Copy admin.conf to User's kube config
@@ -66,9 +68,9 @@
         group: "{{ current_user }}"
 
     - name: Install Pod Network
-      # become: yes
-      # become_user: dev
+      become: yes
+      become_user: dev
       shell: kubectl apply -f https://raw.githubusercontent.com/antrea-io/antrea/main/build/yamls/antrea.yml >> pod_network_setup.log
       args:
-        chdir: $HOME
-        creates: pod_network_setup.log
+        chdir: "/home/{{ current_user }}"
+        # creates: pod_network_setup.log

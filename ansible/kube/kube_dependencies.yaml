@@ -50,8 +50,8 @@
 
     - name: Add containerd configuration
       shell: /usr/bin/containerd config default > /etc/containerd/config.toml
-      args:
-        creates: /etc/containerd/config.toml
+      # args:
+      #   creates: /etc/containerd/config.toml
 
     - name: Configuring Systemd cgroup driver for containerd
       lineinfile:
@@ -68,13 +68,13 @@
 
     - name: Install Kubelet
       apt:
-        name: kubelet=1.32.*
+        name: kubelet
         state: present
         update_cache: true
 
     - name: Install Kubeadm
       apt:
-        name: kubeadm=1.32.*
+        name: kubeadm
         state: present
 
     - name: Enable the Kubelet service
@@ -87,6 +87,6 @@
   tasks:
     - name: Install Kubectl
       apt:
-        name: kubectl=1.32.*
+        name: kubectl
         state: present
         force: yes
