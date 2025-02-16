@@ -1,0 +1,74 @@
+- hosts: master
+  become: yes
+  tasks:
+    # - name: Get current user
+    #   set_fact:
+    #     current_user: "{{ ansible_env.USER }}"
+
+    # - name: Get current user
+    #   set_fact:
+    #     current_user: "{{ ansible_user_id }}"
+
+    - name: Get current user
+      set_fact:
+        current_user: "dev"
+
+    - name: Get current user's home directory
+      set_fact:
+        user_home: "{{ ansible_env.HOME }}"
+
+    - name: Create an Empty file for Kubeadm configuring
+      copy:
+        content: ""
+        dest: /etc/kubernetes/kubeadm-config.yaml
+        force: no
+
+    - name: Configure container runtime
+      blockinfile:
+        path: /etc/kubernetes/kubeadm-config.yaml
+        block: |
+          apiVersion: kubeadm.k8s.io/v1beta3
+          kind: ClusterConfiguration
+          apiServer:
+            certSANs:
+              - "k8s.microplusleasing.com"
+              - "kube.microplusleasing.com"
+          networking:
+            podSubnet: "10.10.0.0/16"
+
+    - name: Initialize the cluster
+      shell: kubeadm init --config /etc/kubernetes/kubeadm-config.yaml >> cluster_initialized.log
+      args:
+        chdir: "/home/{{ current_user }}"
+        # creates: cluster_initialized.log
+
+    - name: Wait until kubeadm init is completed
+      wait_for:
+        path: /etc/kubernetes/admin.conf
+        state: present
+        timeout: 300  # รอสูงสุด 5 นาที (ปรับค่าได้)
+
+    - name: Create .kube directory
+      become: yes
+      # become_user: dev
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: Copy admin.conf to User's kube config
+      become: yes
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ current_user }}/.kube/config
+        remote_src: yes
+        owner: "{{ current_user }}"
+        group: "{{ current_user }}"
+
+    - name: Install Pod Network
+      # become: yes
+      # become_user: dev
+      shell: kubectl apply -f https://raw.githubusercontent.com/antrea-io/antrea/main/build/yamls/antrea.yml >> pod_network_setup.log
+      args:
+        chdir: $HOME
+        creates: pod_network_setup.log

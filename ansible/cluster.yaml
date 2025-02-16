@@ -1,0 +1,4 @@
+- import_playbook: base.yaml
+- import_playbook: kube/kube_dependencies.yaml
+- import_playbook: kube/kube_master.yaml
+- import_playbook: kube/kube_workers.yaml

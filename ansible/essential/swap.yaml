@@ -1,0 +1,16 @@
+- name: swap manage
+  hosts: all
+  become: yes
+  tasks:
+    - name: Disable swap immediately
+      command: swapoff -a
+      when: ansible_swaptotal_mb > 0  # ปิด swap ถ้ายังเปิดอยู่
+
+    - name: Comment out swap lines in /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        # regexp: '^\s*\b(swap)\b'
+        regexp: '^\s*UUID=.*\s+swap\s+'
+        line: '# \g<0>'
+        backrefs: yes
+        state: present

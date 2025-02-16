@@ -1,0 +1,3 @@
+- import_playbook: essential/updateAndUpgrade.yaml
+- import_playbook: essential/essential.yaml
+- import_playbook: essential/swap.yaml
